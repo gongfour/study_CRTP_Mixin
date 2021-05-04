@@ -2,8 +2,21 @@
 #include <string>
 #include <iostream>
 
+
+template <class Printable>
+struct RepeatPrint
+{
+    void repeat(unsigned int n)
+    {
+        while(n-- > 0)
+            static_cast<Printable*>(this)->print(); // 상속 받을 클래스로 형변환 가능
+    }
+};
+
 // Original Class
-class Name
+// you should inherit a RepeatPrint Interface
+// This is the CRTP: 자기 자신을 베이스 클래스의 템플릿 인자로 상속받는 것
+class Name : public RepeatPrint<Name>
 {
     std::string m_firstName;
     std::string m_lastName;
@@ -21,36 +34,9 @@ public:
     }
 };
 
-// This is the CRTP
-template <class Printable>
-struct RepeatPrint : Printable // public inheritance (STRUCT)
-{
-    // copy constructor or move constructor
-    explicit RepeatPrint(const Printable& printable) : Printable(printable) 
-    {}
-
-    void repeat(unsigned int n) const
-    {
-        while(n-- > 0)
-            this->print();
-    }
-};
-
-// It is useful
-template <class Printable>
-RepeatPrint<Printable> repeatPrint(const Printable& printable)
-{
-    return RepeatPrint<Printable>(printable);
-}
-
 int main(int argc, char const *argv[])
 {
     Name ned("Eddard", "Stark");
-    repeatPrint(ned).repeat(10);
-    repeatPrint(Name{"A", "B"}).repeat(2);
-
-    RepeatPrint<Name> print(ned);
-    print.repeat(5);
-    print.print();
+    ned.repeat(10);
     return 0;
 }
